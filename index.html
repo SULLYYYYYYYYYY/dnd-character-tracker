@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark">
+<title>DM Screen · Character Tracker</title>
+<style>
+:root{--bg:#16191f;--panel:#20252e;--card:#272d37;--line:#3c4552;--text:#ecf0f4;--muted:#a3afbf;--dim:#7e8a9a;--green:#71d09b;--red:#ef8991;--gold:#ecc27a;--focus:#b7aaf8}
+*{box-sizing:border-box}html,body{margin:0;min-width:260px;color:var(--text);background:var(--bg);font:12px/1.36 system-ui,-apple-system,'Segoe UI',Arial,sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.38}button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px solid var(--focus);outline-offset:2px}input,textarea,select{color:var(--text)}[hidden]{display:none!important}
+.app{padding:10px 12px}.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:9px}h1{font-size:16px;letter-spacing:-.3px;margin:0}.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:6px}.btn,.select,.icon-btn{border:1px solid var(--line);background:#292f39;border-radius:6px;color:var(--text);padding:5px 9px;min-height:29px;white-space:nowrap}.btn:hover,.icon-btn:hover{background:#3a434f}.btn-primary{border-color:#718b7a;background:#304638}.btn-primary:hover{background:#385741}.btn-warning{border-color:#977948;color:var(--gold)}.btn[aria-pressed=true]{border-color:var(--gold);color:var(--gold);background:#785c2f33}.icon-btn{min-width:29px;padding:5px 7px}.mini{font-size:10px;min-height:24px;padding:3px 6px}.muted{color:var(--muted)}.scale{display:flex;gap:5px;align-items:center;color:var(--muted);font-size:11px}.scale input{width:80px;accent-color:var(--gold)}#scaleValue{width:36px;text-align:right}.workspace-wrap{width:100%;overflow-x:auto;scrollbar-color:#75808d transparent}.workspace{zoom:1}.characters{display:flex;flex-direction:column;gap:7px}.character{display:grid;grid-template-columns:116px 184px minmax(var(--counters-width,284px),1fr) var(--notes-width,350px);grid-template-rows:30px 74px;grid-template-areas:'identity statuses statuses notes' 'identity saves counters notes';column-gap:9px;row-gap:5px;min-width:calc(116px + 184px + var(--counters-width,284px) + var(--notes-width,350px) + 65px);padding:9px 10px;background:var(--panel);border:1px solid var(--line);border-radius:9px;align-items:start}.character.is-drag-target{outline:2px solid var(--focus)}
+.identity{grid-area:identity;display:flex;min-width:0;flex-direction:column;gap:7px}.identity-name{display:flex;gap:3px;align-items:center}.drag-handle{padding:0 3px;border:0;color:#8994a3;background:transparent;font-size:18px;line-height:22px;cursor:grab;user-select:none}.drag-handle:active{cursor:grabbing}.char-name{font-weight:700;font-size:13px;min-width:0;width:100%;padding:3px 2px;border:1px solid transparent;border-radius:4px;background:transparent;text-overflow:ellipsis}.char-name:hover,.char-name:focus{border-color:#596577;background:#29313d}.identity-actions{display:flex;flex-wrap:wrap;gap:4px}.quiet{border:1px solid #46505f;background:transparent;color:var(--muted);font-size:10px;padding:4px 6px;border-radius:5px}.quiet:hover{background:#35404a}.quiet-danger:hover{color:var(--red)}
+.status-strip{grid-area:statuses;display:flex;align-items:center;gap:5px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:#4f5968 transparent;min-width:0;white-space:nowrap;min-height:30px}.effect{height:29px;width:29px;min-width:29px;max-width:29px;border-radius:50%;background:#252b34;border:2px solid #636e7d;color:#8190a0;display:grid;place-items:center;padding:0;font-weight:750;font-size:9px;letter-spacing:-.3px;line-height:1;transition:background .12s,border .12s}.effect:hover{border-color:#c8d2df}.effect.active{color:#fff;background:var(--effect-color);border-color:var(--effect-color);box-shadow:0 0 0 2px #ffffff14 inset}.effect.exhaustion-linked{border-style:dashed}.effect-add{height:25px;min-width:25px;padding:0 5px;border:1px dashed #626d7c;border-radius:50%;background:transparent;color:#aebace}.effect-add:hover{background:#343f4b}
+.saves{grid-area:saves;display:flex;flex-direction:column;justify-content:center;gap:7px;height:74px}.save-row{display:flex;align-items:center;gap:4px}.save-label{width:44px;flex:none;font-size:11px;color:var(--muted)}.circles{display:flex;gap:3px}.circle{width:29px;height:29px;padding:1px;border:0;border-radius:50%;background:transparent;color:#677586;display:grid;place-items:center}.circle svg{width:27px;height:27px}.circle .outline{stroke:currentColor;stroke-width:1.8;fill:none}.circle .middle{stroke:currentColor;stroke-width:2.2;fill:none;stroke-linecap:round;stroke-linejoin:round}.circle:hover{color:#c7d0db}.circle.success.is-on{color:var(--green)}.circle.failure.is-on{color:var(--red)}.circle.is-locked .outline{stroke-width:2.2}.circle.is-locked .middle{stroke:var(--gold)}
+.counter-section{grid-area:counters;min-width:0}.section-head{display:flex;justify-content:space-between;align-items:center;min-height:15px;margin-bottom:5px}.section-label,.notes label{font-size:10px;letter-spacing:.3px;color:var(--dim);font-weight:720}.add-counter{background:none;border:0;color:#c3d3e7;font-size:10px;padding:1px}.add-counter:hover{text-decoration:underline}.counters{display:flex;gap:6px;flex-wrap:nowrap}.counter{flex:0 0 135px;width:135px;height:54px;border:1px solid #47505e;border-radius:6px;background:var(--card);padding:4px 6px}.counter.at-limit{border-color:#9a855c}.counter.over-limit{border-color:#c47578}.counter-name-row{display:flex;gap:3px;align-items:center}.counter-name{min-width:0;flex:1;background:transparent;border:1px solid transparent;border-radius:4px;color:var(--text);font-size:10px;font-weight:650;padding:0 1px}.counter-name:focus,.counter-name:hover{border-color:#707987}.remove-counter{border:0;background:none;color:var(--dim);font-size:14px;padding:0 2px}.remove-counter:hover{color:var(--red)}.counter-controls{display:flex;justify-content:space-between;align-items:center;gap:2px;margin-top:4px}.stepper{height:22px;width:22px;padding:0;border:1px solid #526071;border-radius:5px;color:var(--text);background:#343d49;font-size:15px}.stepper:hover{background:#465262}.count-input,.max-input{width:27px;padding:0;border:1px solid transparent;border-radius:3px;background:none;color:var(--text);text-align:center;font-weight:750;font-variant-numeric:tabular-nums;-moz-appearance:textfield}.max-input{width:24px;color:var(--muted);font-weight:500}.count-input::-webkit-inner-spin-button,.max-input::-webkit-inner-spin-button{-webkit-appearance:none}.count-input:hover,.max-input:hover{border-color:#606e7c}.slash{color:#7d8998}
+.notes{grid-area:notes;position:relative;min-width:0;display:flex;flex-direction:column;gap:5px}.notes textarea{height:86px;min-height:86px;max-height:86px;resize:none;overflow:auto;background:#1a1f27;color:var(--text);border:1px solid #4b5665;border-radius:6px;padding:7px;font-size:11px;line-height:1.45}.notes textarea::placeholder{color:#768599}.notes-resize{position:absolute;left:-10px;top:15px;bottom:0;width:10px;cursor:ew-resize;border:0;background:transparent;touch-action:none}.notes-resize:before{content:'';position:absolute;left:4px;top:20%;height:60%;width:3px;background:#657587;border-radius:3px}.notes-resize:hover:before{background:var(--gold)}body.resizing,body.resizing *{cursor:ew-resize!important;user-select:none!important}
+.footer{display:flex;justify-content:space-between;gap:10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line)}.save-status{color:var(--dim);font-size:10px}.warning{color:var(--gold)!important}.hint{font-size:11px;color:var(--gold);margin:4px 0 8px}
+.menu-wrap{position:relative}.menu{position:absolute;right:0;top:33px;z-index:8;border:1px solid #526071;background:#2b323d;border-radius:7px;min-width:150px;padding:4px;box-shadow:0 9px 20px #0008}.menu button{width:100%;padding:7px 9px;text-align:left;border:0;background:transparent;color:var(--text)}.menu button:hover{background:#394553}
+.overlay{position:fixed;inset:0;background:#000b;z-index:50;display:flex;align-items:center;justify-content:center;padding:14px}.dialog{width:min(900px,100%);max-height:92vh;display:flex;flex-direction:column;overflow:hidden;background:#252b34;border:1px solid #5a6574;border-radius:12px;box-shadow:0 18px 65px #000b}.dialog-head{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--line)}.dialog h2{margin:0;font-size:16px}.dialog-main{padding:14px 17px;overflow:auto}.dialog-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:11px 17px;border-top:1px solid var(--line)}.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}.tabs .active{background:#46586c;border-color:#7c93ab}.panel-note{color:var(--muted);line-height:1.5;font-size:11px;margin:7px 0 12px}.form-row{display:flex;align-items:center;flex-wrap:wrap;gap:9px;margin:7px 0}.field{background:#1d232c;border:1px solid #586475;border-radius:5px;min-height:30px;padding:5px 7px;color:var(--text);max-width:100%}.field.invalid{border-color:#ed8b94;background:#42282f}.rule-table{width:100%;border-collapse:collapse;font-size:11px}.rule-table th{text-align:left;font-size:10px;color:var(--muted);font-weight:690;padding:7px 6px;border-bottom:1px solid #4e5968}.rule-table td{padding:6px;border-bottom:1px solid #3c4552}.rule-table td:first-child{font-weight:650;min-width:95px}.rule-table .field{width:100%;min-width:120px}.rule-help{font-size:10px;color:var(--dim);margin-top:5px}.error{color:#ff9faa;font-size:11px}.selection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:7px}.effect-option{display:flex;align-items:center;gap:9px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;background:#20252e;text-align:left;color:var(--text)}.effect-option:hover{background:#303945}.effect-option .effect{pointer-events:none}.effect-option .tick{margin-left:auto;color:var(--green)}.effect-item{display:grid;grid-template-columns:35px minmax(120px,1fr) auto;gap:10px;align-items:center;border-bottom:1px solid var(--line);padding:7px 0}.form-grid{display:grid;grid-template-columns:minmax(120px,1fr) 80px 70px auto;gap:7px;align-items:end}.form-grid label{display:flex;flex-direction:column;gap:4px;font-size:10px;color:var(--muted)}.chip{display:inline-block;border:1px solid var(--line);padding:3px 6px;border-radius:5px;color:var(--muted);font-size:10px}.preview-row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;border-bottom:1px solid #394351}.preview-row strong{font-variant-numeric:tabular-nums}.preview-value{color:var(--green)}.layout-stacked{min-width:0;grid-template-columns:minmax(110px,1fr) minmax(140px,1fr);grid-template-rows:auto auto auto auto;grid-template-areas:'identity statuses' 'saves saves' 'counters counters' 'notes notes';row-gap:9px}.layout-stacked .notes-resize{display:none}.layout-stacked .status-strip{max-width:100%}.layout-stacked .saves{height:auto}.layout-stacked .notes textarea{height:70px;min-height:70px;max-height:70px}@media(max-width:550px){.app{padding:8px}.dialog{max-height:97vh}.dialog-head,.dialog-main,.dialog-foot{padding:9px}.rule-table td{padding:4px 2px}.form-grid{grid-template-columns:1fr 70px}.header{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="header"><h1>Character Tracker</h1><div class="toolbar">
+<button class="btn" id="undo" disabled title="Undo the last change, on any character">↶ Undo</button>
+<button class="btn btn-primary" id="shortRest">Short Rest</button><button class="btn btn-primary" id="longRest">Long Rest</button>
+<button class="btn" id="editMode">⚙ Edit Mode</button>
+<button class="btn" id="lockMode" aria-pressed="false" title="Click individual death-save circles to lock or unlock them">♧ Lock saves</button>
+<label class="scale">Size <input type="range" min="65" max="135" step="5" id="scale" value="100"><span id="scaleValue">100%</span></label>
+<select class="field" id="layout" aria-label="Layout"><option value="auto">Row</option><option value="wide">Wide row</option><option value="stacked">Stacked</option></select>
+<div class="menu-wrap"><button class="icon-btn" id="menuToggle" aria-label="Backup menu" aria-expanded="false">⋯</button><div class="menu" id="menu" hidden><button id="exportBtn">Download backup</button><button id="importBtn">Restore backup</button></div></div>
+</div></header>
+<div class="hint" id="lockHint" hidden>Lock mode: click an individual save circle to lock or unlock it. Locked saves are never cleared by Reset or Rest.</div>
+<div class="workspace-wrap"><div class="workspace" id="workspace"><section class="characters" id="characters" aria-label="Characters"></section></div></div>
+<footer class="footer"><button class="btn" id="addCharacter">+ Add character</button><span class="save-status" id="storageStatus">Checking local storage…</span></footer>
+<input id="fileInput" type="file" accept=".json,application/json" hidden>
+</main>
+<div class="overlay" id="overlay" hidden role="presentation"><section class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog-head"><h2 id="dialogTitle"></h2><button class="icon-btn" id="closeDialog" aria-label="Close dialog">✕</button></div><div class="dialog-main" id="dialogMain"></div><div class="dialog-foot" id="dialogFoot"></div></section></div>
+<script>
+(()=>{'use strict';
+const $=id=>document.getElementById(id), list=$('characters'), storage=$('storageStatus');
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const uid=()=>('id'+Math.random().toString(36).slice(2,10)+Date.now().toString(36));
+const clamp=(n,min=0,max=999)=>Math.max(min,Math.min(max,Math.round(Number(n)||0)));
+const officialNames=['Blinded','Charmed','Deafened','Exhaustion','Frightened','Grappled','Incapacitated','Invisible','Paralyzed','Petrified','Poisoned','Prone','Restrained','Stunned','Unconscious'];
+const officialCodes=['BL','CH','DE','EX','FR','GR','IN','IV','PA','PE','PO','PR','RE','ST','UN'];
+const officialColors=['#b48b5b','#b36da1','#8a94aa','#cf7957','#b078b1','#b18756','#c27780','#6e96b0','#ac6588','#8a8583','#72915b','#9a826e','#b07753','#c37590','#687697'];
+const official=officialNames.map((label,i)=>({id:'condition:'+label.toLowerCase(),label,abbr:officialCodes[i],color:officialColors[i],kind:'official'}));
+const builtins=[['Rage','RG','#b84c52'],['Concentration','CON','#7d77ca'],['Bless','BL+','#5a9f79'],['Bane','BN','#a66cb3'],['Haste','HST','#5d9dcc'],['Slow','SL','#8577b2'],['Advantage to Hit','A+','#429d75'],['Disadvantage to Hit','A−','#b86469'],['Dodge','DG','#578ca8'],['Hex','HEX','#9263b6'],["Hunter’s Mark",'HM','#58856c'],['Fly','FLY','#508ca8'],['Sanctuary','SAN','#879962'],['Inspiration','INS','#ad9258'],['Polymorph','POL','#a082b0'],['Hidden','HDN','#6d899d'],['Shield','SH','#667fb7']].map(([label,abbr,color])=>({id:'extra:'+label.toLowerCase().replace(/[^a-z0-9]/g,''),label,abbr,color,kind:'builtin'}));
+const counter=(label)=>({id:uid(),label,value:0,max:null});
+const blank=(name,id=uid())=>({id,name,successes:[0,0,0],failures:[0,0,0],counters:[counter('Short rests'),counter('Exhaustion')],notes:'',notesWidth:350,effects:[],extraEffects:[]});
+const defaultRules=()=>({short:{counters:{'short rests':'increase by 1'},deathSaves:'keep',effects:{}},long:{counters:{'short rests':'reset to 0','exhaustion':'reduce by 1'},deathSaves:'clear unlocked',effects:{}},overrides:{}});
+const initial=()=>({version:3,settings:{scale:100,layout:'auto'},characters:[blank('Character 1','c1'),blank('Character 2','c2'),blank('Character 3','c3')],customEffects:[],restRules:defaultRules()});
+const normalize=(raw)=>{
+ if(Array.isArray(raw))raw={version:1,settings:{scale:100,layout:'auto'},characters:raw};
+ if(!raw||!Array.isArray(raw.characters)||raw.characters.length>100)throw Error('Invalid characters');
+ const data=initial();
+ if(raw.settings&&Number.isFinite(Number(raw.settings.scale)))data.settings.scale=clamp(raw.settings.scale,65,135);
+ if(raw.settings&&['auto','wide','stacked'].includes(raw.settings.layout))data.settings.layout=raw.settings.layout;
+ data.characters=raw.characters.map(c=>{
+  if(!c||typeof c.id!=='string'||typeof c.name!=='string'||!['successes','failures'].every(k=>Array.isArray(c[k])&&c[k].length===3&&c[k].every(v=>[0,1,2].includes(v))))throw Error('Invalid character');
+  const base=blank(c.name.slice(0,100),c.id.slice(0,100));base.successes=[...c.successes];base.failures=[...c.failures];base.notes=String(c.notes||'').slice(0,3000);base.notesWidth=clamp(c.notesWidth??350,190,1000);
+  if(Array.isArray(c.counters)){if(c.counters.length>24)throw Error('Too many counters');base.counters=c.counters.map(t=>({id:String(t.id).slice(0,100),label:String(t.label).slice(0,60),value:clamp(t.value),max:t.max===null||t.max===undefined?null:clamp(t.max,1,999)}));}
+  base.effects=Array.isArray(c.effects)?c.effects.filter(x=>typeof x==='string').slice(0,100):[];
+  base.extraEffects=Array.isArray(c.extraEffects)?c.extraEffects.filter(x=>typeof x==='string').slice(0,100):[];
+  return base;
+ });
+ if(Array.isArray(raw.customEffects)){if(raw.customEffects.length>60)throw Error('Too many effects');data.customEffects=raw.customEffects.filter(e=>e&&typeof e.id==='string'&&typeof e.label==='string'&&typeof e.abbr==='string'&&/^#[0-9a-fA-F]{6}$/.test(e.color)).map(e=>({id:e.id.slice(0,100),label:e.label.slice(0,50),abbr:e.abbr.slice(0,5),color:e.color,kind:'custom'}));}
+ if(raw.restRules&&typeof raw.restRules==='object'){
+  for(const key of ['short','long']){
+   const rr=raw.restRules[key];if(!rr||typeof rr!=='object')continue;
+   if(rr.counters&&typeof rr.counters==='object')for(const [n,r] of Object.entries(rr.counters))if(n.length<70&&typeof r==='string')data.restRules[key].counters[n.toLowerCase().trim()]=r.slice(0,120);
+   if(['keep','clear unlocked'].includes(rr.deathSaves))data.restRules[key].deathSaves=rr.deathSaves;
+   if(rr.effects&&typeof rr.effects==='object')for(const [n,r] of Object.entries(rr.effects))if(n.length<110&&['keep','clear','activate'].includes(r))data.restRules[key].effects[n]=r;
+  }
+  if(raw.restRules.overrides&&typeof raw.restRules.overrides==='object')for(const [cid,rests] of Object.entries(raw.restRules.overrides)){
+   if(cid.length>100||!rests||typeof rests!=='object')continue;
+   data.restRules.overrides[cid]={};for(const rest of ['short','long']){const src=rests[rest];if(src&&typeof src==='object'){data.restRules.overrides[cid][rest]={};for(const [k,v] of Object.entries(src))if(k.length<70&&typeof v==='string')data.restRules.overrides[cid][rest][k]=v.slice(0,120);}}
+  }
+ }
+ if(new Set(data.characters.map(x=>x.id)).size!==data.characters.length)throw Error('Duplicate characters');
+ return data;
+};
+let state=initial(),history=[],canSave=false,lockMode=false,dialog='',restTab='long',settingsTab='rests',ruleScope='all',chooserChar='',previewRest='long',previewTarget='all',dragId=null,editBaseline=null;
+const KEY3='dm-character-tracker-v3',KEY2='dm-character-tracker-v2',KEY1='dm-death-saving-throws-v1';
+try{localStorage.setItem('dm-test','1');localStorage.removeItem('dm-test');canSave=true;for(const k of [KEY3,KEY2,KEY1]){const d=localStorage.getItem(k);if(d){state=normalize(JSON.parse(d));break;}}}catch(e){canSave=false;}
+const snapshot=()=>JSON.stringify(state);
+const record=old=>{if(old!==snapshot()){history.push(old);if(history.length>80)history.shift();$('undo').disabled=false;}};
+const persist=()=>{if(canSave){try{localStorage.setItem(KEY3,snapshot());storage.textContent='Saved in this browser';storage.classList.remove('warning');return;}catch(e){canSave=false;}}storage.textContent='Auto-save unavailable · download backups';storage.classList.add('warning');};
+const commit=(fn,update=true)=>{const old=snapshot();fn();record(old);persist();if(update)render();};
+const getChar=id=>state.characters.find(c=>c.id===id);
+const getCount=(cid,tid)=>getChar(cid)?.counters.find(x=>x.id===tid);
+const getEffect=id=>[...official,...builtins,...state.customEffects].find(e=>e.id===id);
+const allEffects=()=>[...official,...builtins,...state.customEffects];
+const nameKey=x=>String(x).trim().toLowerCase();
+const linkedExhaustion=c=>c.counters.find(t=>nameKey(t.label)==='exhaustion');
+const isOn=(c,id)=>id==='condition:exhaustion'&&linkedExhaustion(c)?linkedExhaustion(c).value>0:c.effects.includes(id);
+const circleSvg=(kind)=>'<svg viewBox="0 0 28 28" aria-hidden="true"><circle class="outline" cx="14" cy="14" r="11.25"/>'+(kind==='lock'?'<path class="middle" d="M10.5 13v-2a3.5 3.5 0 0 1 7 0v2M9.5 13h9v8h-9z"/>':kind==='success'?'<path class="middle" d="m9 14 3 3 7-7"/>':kind==='failure'?'<path class="middle" d="M10 10l8 8m0-8-8 8"/>':'')+'</svg>';
+const effectsMarkup=(c)=>{
+ const selected=[...official,...c.extraEffects.map(getEffect).filter(Boolean)];
+ return selected.map(e=>{const on=isOn(c,e.id);const label=e.label+(e.id==='condition:exhaustion'&&linkedExhaustion(c)?' — level '+linkedExhaustion(c).value:'');return `<button type="button" class="effect${on?' active':''}${e.id==='condition:exhaustion'&&linkedExhaustion(c)?' exhaustion-linked':''}" style="--effect-color:${e.color}" data-effect="${esc(e.id)}" data-character="${esc(c.id)}" title="${esc(label)}" aria-label="${esc(c.name+': '+label)}" aria-pressed="${on}">${esc(e.abbr)}</button>`;}).join('')+`<button class="effect-add" type="button" data-choose-effects="${esc(c.id)}" title="Add or remove optional effects for ${esc(c.name)}" aria-label="Choose optional effects for ${esc(c.name)}">+</button>`;
+};
+const savesMarkup=c=>[['successes','Success','success'],['failures','Failure','failure']].map(([key,label,klass])=>`<div class="save-row"><span class="save-label">${label}</span><div class="circles">${c[key].map((v,i)=>`<button class="circle ${klass}${v?' is-on':''}${v===2?' is-locked':''}" type="button" data-save="${key}" data-index="${i}" data-character="${esc(c.id)}" aria-label="${esc(c.name+': '+label+' '+(i+1)+(v===2?' locked':v===1?' marked':' empty'))}" title="${esc(label+' '+(i+1)+(v===2?' — locked':''))}">${circleSvg(v===2?'lock':v===1?klass:'empty')}</button>`).join('')}</div></div>`).join('');
+const countersMarkup=c=>c.counters.map(t=>`<div class="counter${t.max!==null&&t.value>t.max?' over-limit':t.max!==null&&t.value===t.max?' at-limit':''}" title="${esc(t.label+(t.max!==null?' · limit '+t.max:''))}"><div class="counter-name-row"><input class="counter-name" data-counter-name="${esc(t.id)}" data-character="${esc(c.id)}" maxlength="60" value="${esc(t.label)}" aria-label="Counter name"><button class="remove-counter" data-remove-counter="${esc(t.id)}" data-character="${esc(c.id)}" title="Remove counter">×</button></div><div class="counter-controls"><button class="stepper" data-step="-1" data-counter="${esc(t.id)}" data-character="${esc(c.id)}" ${t.value===0?'disabled':''}>−</button><input class="count-input" type="number" inputmode="numeric" min="0" max="999" data-count="${esc(t.id)}" data-character="${esc(c.id)}" value="${t.value}" aria-label="${esc(t.label)} value"><span class="slash">/</span><input class="max-input" type="number" min="1" max="999" data-max="${esc(t.id)}" data-character="${esc(c.id)}" value="${t.max===null?'':t.max}" placeholder="—" title="Optional limit" aria-label="${esc(t.label)} limit"><button class="stepper" data-step="1" data-counter="${esc(t.id)}" data-character="${esc(c.id)}" ${t.value===999?'disabled':''}>+</button></div></div>`).join('');
+const render=()=>{
+ $('workspace').style.zoom=state.settings.scale/100;
+ $('scale').value=state.settings.scale;$('scaleValue').textContent=state.settings.scale+'%';$('layout').value=state.settings.layout;$('undo').disabled=!history.length;
+ $('lockMode').setAttribute('aria-pressed',String(lockMode));$('lockHint').hidden=!lockMode;
+ if(!state.characters.length){list.innerHTML='<div class="muted" style="padding:14px">No characters. Select Add character.</div>';return;}
+ list.innerHTML=state.characters.map(c=>{const cw=Math.max(284,c.counters.length*135+Math.max(0,c.counters.length-1)*6);return `<article class="character ${state.settings.layout==='stacked'?'layout-stacked':''}" data-id="${esc(c.id)}" style="--notes-width:${c.notesWidth}px;--counters-width:${cw}px"><div class="identity"><div class="identity-name"><button class="drag-handle" draggable="true" data-drag="${esc(c.id)}" aria-label="Drag to reorder ${esc(c.name)}; use arrow keys to move" title="Drag to reorder, or use arrow keys">⠿</button><input class="char-name" data-name="${esc(c.id)}" maxlength="100" value="${esc(c.name)}" aria-label="Character name"></div><div class="identity-actions"><button class="quiet" data-reset="${esc(c.id)}" title="Clear unlocked death saves">Reset saves</button><button class="quiet quiet-danger" data-remove="${esc(c.id)}" title="Remove character">×</button></div></div><div class="status-strip" aria-label="Conditions and effects for ${esc(c.name)}">${effectsMarkup(c)}</div><div class="saves">${savesMarkup(c)}</div><div class="counter-section"><div class="section-head"><span class="section-label">COUNTERS</span><button class="add-counter" data-add-counter="${esc(c.id)}">+ Add counter</button></div><div class="counters">${countersMarkup(c)}</div></div><div class="notes"><button class="notes-resize" data-resize="${esc(c.id)}" title="Drag left to widen; double click to reset" aria-label="Resize notes for ${esc(c.name)}"></button><label for="notes-${esc(c.id)}">LANGUAGES / NOTES</label><textarea id="notes-${esc(c.id)}" data-notes="${esc(c.id)}" maxlength="3000" placeholder="e.g. Common, Elvish">${esc(c.notes)}</textarea></div></article>`;}).join('');
+};
+// Supported rest rule grammar is intentional: no arbitrary JavaScript, and unknown instructions never run.
+const nums={zero:0,one:1,two:2,three:3,four:4,five:5,six:6,seven:7,eight:8,nine:9,ten:10,eleven:11,twelve:12,thirteen:13,fourteen:14,fifteen:15,sixteen:16,seventeen:17,eighteen:18,nineteen:19,twenty:20};
+const toNumber=t=>/^\d{1,3}$/.test(t)?Number(t):nums[t];
+const parseRule=raw=>{
+ const s=String(raw||'no change').toLowerCase().trim().replace(/[.!]$/,'').replace(/\s+/g,' ');
+ if(['','no change','none','keep','keep same','leave unchanged','unchanged','do nothing'].includes(s))return {type:'keep'};
+ if(['reset','reset to zero','reset to 0','clear','clear all','zero'].includes(s))return {type:'set',n:0};
+ if(['halve','half','divide by 2','reduce by half'].includes(s))return {type:'half'};
+ if(['double','multiply by 2'].includes(s))return {type:'double'};
+ if(['restore to maximum','restore to max','set to max','fill to max'].includes(s))return {type:'max'};
+ let m=s.match(/(?:^|\s)(?:set(?: to)?|reset to|make|become) (\d{1,3}|[a-z]+)$/);if(m){const n=toNumber(m[1]);if(n!==undefined)return{type:'set',n};}
+ m=s.match(/(?:^|\s)(?:increase(?:d|s)?(?: by)?|add|gain|plus) (\d{1,3}|[a-z]+)$/);if(m){const n=toNumber(m[1]);if(n!==undefined)return{type:'delta',n};}
+ m=s.match(/(?:^|\s)(?:decrease(?:d|s)?(?: by)?|reduce(?:d|s)?(?: by)?|subtract|lose|minus) (\d{1,3}|[a-z]+)$/);if(m){const n=toNumber(m[1]);if(n!==undefined)return{type:'delta',n:-n};}
+ m=s.match(/^([+−-])(\d{1,3})$/);if(m)return{type:'delta',n:(m[1]==='+'?1:-1)*Number(m[2])};
+ return {type:'invalid',error:'Unrecognised rule. Try “increase by 2”, “reduce by one”, “reset to 0”, “set to 3”, “restore to max” or “no change”.'};
+};
+const applyRule=(value,max,rule)=>{
+ switch(rule.type){case 'keep':return value;case 'set':return clamp(rule.n);case 'delta':return clamp(value+rule.n);case 'half':return clamp(Math.floor(value/2));case 'double':return clamp(value*2);case 'max':return max===null?null:clamp(max);default:return null;}
+};
+const restRule=(c,t,rest)=>{const k=nameKey(t.label),override=state.restRules.overrides[c.id]?.[rest]?.[k];return override?.trim()||state.restRules[rest].counters[k]||'no change';};
+const planRest=(rest,target)=>{
+ const chars=target==='all'?state.characters:state.characters.filter(c=>c.id===target),changes=[],errors=[];
+ for(const c of chars){
+  for(const t of c.counters){const raw=restRule(c,t,rest),parsed=parseRule(raw);if(parsed.type==='invalid'){errors.push(`${c.name} · ${t.label}: ${parsed.error}`);continue;}const next=applyRule(t.value,t.max,parsed);if(next===null){errors.push(`${c.name} · ${t.label}: “restore to max” needs a counter limit.`);continue;}if(next!==t.value)changes.push({cid:c.id,kind:'counter',id:t.id,label:`${c.name} · ${t.label}`,from:String(t.value),to:String(next)});}
+  if(state.restRules[rest].deathSaves==='clear unlocked')for(const k of ['successes','failures'])if(c[k].some(v=>v===1))changes.push({cid:c.id,kind:'saves',id:k,label:`${c.name} · ${k==='successes'?'Death-save successes':'Death-save failures'}`,from:c[k].filter(v=>v!==0).length+' marked',to:c[k].filter(v=>v===2).length+' locked'});
+  for(const e of allEffects()){
+   const rule=state.restRules[rest].effects[e.id]||'keep';if(rule==='keep')continue;
+   if(e.id==='condition:exhaustion'&&linkedExhaustion(c))continue;
+   if(e.kind!=='official'&&!c.extraEffects.includes(e.id))continue;
+   const on=isOn(c,e.id),desired=rule==='activate';if(on!==desired)changes.push({cid:c.id,kind:'effect',id:e.id,label:`${c.name} · ${e.label}`,from:on?'Active':'Inactive',to:desired?'Active':'Inactive',on:desired});
+  }
+ }
+ return {changes,errors};
+};
+const runRest=(rest,target)=>{const p=planRest(rest,target);if(p.errors.length){alert('Fix rest rules first:\n\n'+p.errors.join('\n'));return;}commit(()=>{for(const ch of p.changes){const c=getChar(ch.cid);if(!c)continue;if(ch.kind==='counter'){const t=c.counters.find(t=>t.id===ch.id);if(t)t.value=Number(ch.to);}if(ch.kind==='saves')c[ch.id]=c[ch.id].map(v=>v===1?0:v);if(ch.kind==='effect')c.effects=ch.on?[...new Set([...c.effects,ch.id])]:c.effects.filter(x=>x!==ch.id);}},true);closeDialog();};
+// Overlay infrastructure
+const openDialog=(mode)=>{dialog=mode;$('overlay').hidden=false;drawDialog();};
+const closeDialog=()=>{dialog='';$('overlay').hidden=true;$('dialogMain').innerHTML='';};
+const foot=html=>{$('dialogFoot').innerHTML=html;};
+const ruleField=(scope,rest,key,defaultText)=>{
+ const value=scope==='all'?(state.restRules[rest].counters[key]||'no change'):(state.restRules.overrides[scope]?.[rest]?.[key]||'');
+ return `<input class="field rule-input" data-rest-rule="${esc(rest)}" data-rule-key="${esc(key)}" data-rule-scope="${esc(scope)}" value="${esc(value)}" placeholder="${esc(scope==='all'?'no change':'Inherit: '+defaultText)}" maxlength="120" aria-label="${esc(rest+' rest '+key)}"><div class="rule-help" data-rule-error="${esc(rest+':'+key)}"></div>`;
+};
+const editorRest=()=>{
+ const labels=[...new Set(state.characters.flatMap(c=>c.counters.map(t=>nameKey(t.label))))].filter(Boolean).sort();
+ const scopeOptions=`<option value="all">All characters (defaults)</option>`+state.characters.map(c=>`<option value="${esc(c.id)}" ${ruleScope===c.id?'selected':''}>${esc(c.name)} (override)</option>`).join('');
+ const sc=ruleScope==='all'?'all':(getChar(ruleScope)?ruleScope:'all');
+ let html=`<div class="tabs"><button class="btn ${restTab==='short'?'active':''}" data-tab-rest="short">Short Rest</button><button class="btn ${restTab==='long'?'active':''}" data-tab-rest="long">Long Rest</button></div><p class="panel-note">Type instructions for each counter. Examples: <b>increase by 2</b>, <b>reduce by one</b>, <b>reset to 0</b>, <b>set to 3</b>, <b>halve</b>, <b>restore to max</b>, <b>no change</b>. Rules work offline; unsupported wording is highlighted and will <b>not</b> execute.</p><div class="form-row"><label for="ruleScope">Rule scope</label><select id="ruleScope" class="field">${scopeOptions}</select><span class="chip">Matching counter names share defaults</span></div>`;
+ html+=`<table class="rule-table"><thead><tr><th>Counter</th><th>${restTab==='short'?'Short':'Long'} Rest instruction</th></tr></thead><tbody>`;
+ for(const k of labels)html+=`<tr><td>${esc(k)}</td><td>${ruleField(sc,restTab,k,state.restRules[restTab].counters[k]||'no change')}</td></tr>`;
+ html+=`</tbody></table>`;
+ if(sc==='all'){
+  html+=`<h3>Death saves</h3><div class="form-row"><label for="saveRest">On ${restTab} rest:</label><select class="field" id="saveRest"><option value="keep" ${state.restRules[restTab].deathSaves==='keep'?'selected':''}>No change</option><option value="clear unlocked" ${state.restRules[restTab].deathSaves==='clear unlocked'?'selected':''}>Clear unlocked circles (locked circles stay)</option></select></div>`;
+  html+=`<details><summary>Advanced: condition and effect behaviour</summary><p class="panel-note">Choose which conditions/effects clear, activate or remain unchanged on a rest. The Exhaustion status automatically follows its counter when present.</p><table class="rule-table"><thead><tr><th>Condition / effect</th><th>On rest</th></tr></thead><tbody>`;
+  for(const e of allEffects()){const rule=state.restRules[restTab].effects[e.id]||'keep';html+=`<tr><td>${esc(e.label)}</td><td><select class="field" data-effect-rule="${esc(e.id)}"><option value="keep" ${rule==='keep'?'selected':''}>No change</option><option value="clear" ${rule==='clear'?'selected':''}>Deactivate</option><option value="activate" ${rule==='activate'?'selected':''}>Activate</option></select></td></tr>`;}
+  html+=`</tbody></table></details>`;
+ }else html+=`<p class="panel-note">Leave a character's rule blank to use the all-characters default. Death-save and effect settings above are shared across the party.</p>`;
+ return html;
+};
+const libraryEditor=()=>{
+ const custom=state.customEffects.map(e=>`<div class="effect-item"><div class="effect active" style="--effect-color:${e.color}">${esc(e.abbr)}</div><div>${esc(e.label)}</div><button class="btn mini" data-delete-custom="${esc(e.id)}">Remove</button></div>`).join('');
+ return `<p class="panel-note">The 15 official 2024 D&D conditions appear on every character by default. Optional presets are assigned to individual characters with the + at the end of their status strip. Custom effects also appear in that chooser.</p><h3>Create custom status effect</h3><form class="form-grid" id="customEffectForm"><label>Name<input class="field" name="name" maxlength="50" required placeholder="e.g. Reckless Attack"></label><label>Circle text<input class="field" name="abbr" maxlength="4" required placeholder="RA"></label><label>Colour<input type="color" name="color" value="#9775c6" style="height:30px;width:55px;border:0;background:transparent"></label><button class="btn" type="submit">+ Create</button></form><h3>Custom effects</h3>${custom||'<p class="muted">No custom effects yet.</p>'}<h3>Optional preset library</h3><p class="panel-note">${builtins.map(e=>esc(e.label)).join(' · ')}</p>`;
+};
+const chooserEditor=()=>{
+ const c=getChar(chooserChar);if(!c)return '<p>Character not found.</p>';
+ return `<p class="panel-note">Choose the extra effects that should appear for <b>${esc(c.name)}</b>. Each one becomes a clickable circle. Unselected options are not shown in the row.</p><div class="selection-grid">${[...builtins,...state.customEffects].map(e=>{const chosen=c.extraEffects.includes(e.id);return `<button type="button" class="effect-option" data-assign="${esc(e.id)}"><span class="effect ${chosen?'active':''}" style="--effect-color:${e.color}">${esc(e.abbr)}</span><span>${esc(e.label)}</span><span class="tick">${chosen?'✓':''}</span></button>`;}).join('')}</div><p class="panel-note">To create a new effect with your own abbreviation and colour, use Edit Mode → Effect library.</p>`;
+};
+const restPreview=()=>{
+ const p=planRest(previewRest,previewTarget),chars=state.characters;
+ return `<p class="panel-note">Preview exactly what will change before committing. The rest applies to the party or a single character. Locked death saves will not be removed.</p><div class="form-row"><label for="restTarget">Apply to</label><select class="field" id="restTarget"><option value="all">All characters</option>${chars.map(c=>`<option value="${esc(c.id)}" ${previewTarget===c.id?'selected':''}>${esc(c.name)}</option>`).join('')}</select><button class="btn mini" id="editRulesFromPreview">Edit rest rules</button></div>${p.errors.length?`<p class="error"><b>Cannot apply:</b><br>${p.errors.map(esc).join('<br>')}</p>`:''}<h3>Changes (${p.changes.length})</h3>${p.changes.length?`<div>${p.changes.map(ch=>`<div class="preview-row"><span>${esc(ch.label)}</span><strong>${esc(ch.from)} → <span class="preview-value">${esc(ch.to)}</span></strong></div>`).join('')}</div>`:'<p class="muted">No changes with the current rules and counts.</p>'}`;
+};
+const drawDialog=()=>{
+ if(!dialog)return;
+ if(dialog==='settings'){$('dialogTitle').textContent='Edit Mode';$('dialogMain').innerHTML=`<div class="tabs"><button class="btn ${settingsTab==='rests'?'active':''}" data-settings-tab="rests">Rest rules</button><button class="btn ${settingsTab==='library'?'active':''}" data-settings-tab="library">Effect library</button></div>`+(settingsTab==='rests'?editorRest():libraryEditor());foot(`<button class="btn" data-close>Done</button>`);validateRuleInputs();}
+ if(dialog==='chooser'){$('dialogTitle').textContent='Optional Effects — '+(getChar(chooserChar)?.name||'');$('dialogMain').innerHTML=chooserEditor();foot(`<button class="btn" data-close>Done</button>`);}
+ if(dialog==='rest'){$('dialogTitle').textContent=(previewRest==='short'?'Short':'Long')+' Rest';$('dialogMain').innerHTML=restPreview();const p=planRest(previewRest,previewTarget);foot(`<button class="btn" data-close>Cancel</button><button class="btn btn-primary" id="applyRest" ${p.errors.length||!p.changes.length?'disabled':''}>Apply ${previewRest==='short'?'Short':'Long'} Rest</button>`);}
+};
+const validateRuleInputs=()=>{if(dialog!=='settings'||settingsTab!=='rests')return;for(const el of $('dialogMain').querySelectorAll('.rule-input')){const raw=el.value,parsed=parseRule(raw);el.classList.toggle('invalid',parsed.type==='invalid');const box=el.nextElementSibling;if(box)box.textContent=parsed.type==='invalid'?parsed.error:'';}};
+$('dialogMain').addEventListener('change',e=>{
+ const el=e.target;
+ if(el.id==='ruleScope'){ruleScope=el.value;drawDialog();return;}
+ if(el.dataset.tabRest){restTab=el.dataset.tabRest;drawDialog();return;}
+ if(el.id==='saveRest'){commit(()=>{state.restRules[restTab].deathSaves=el.value;},false);return;}
+ if(el.dataset.effectRule){commit(()=>{state.restRules[restTab].effects[el.dataset.effectRule]=el.value;},false);return;}
+ if(el.id==='restTarget'){previewTarget=el.value;drawDialog();return;}
+});
+$('dialogMain').addEventListener('input',e=>{const el=e.target;if(!el.matches('[data-rest-rule]'))return;const scope=el.dataset.ruleScope,rest=el.dataset.restRule,key=el.dataset.ruleKey;if(scope==='all')state.restRules[rest].counters[key]=el.value;else{state.restRules.overrides[scope]??={};state.restRules.overrides[scope][rest]??={};state.restRules.overrides[scope][rest][key]=el.value;}persist();validateRuleInputs();});
+$('dialogMain').addEventListener('click',e=>{
+ let b=e.target.closest('[data-tab-rest]');if(b){restTab=b.dataset.tabRest;drawDialog();return;}
+ b=e.target.closest('[data-settings-tab]');if(b){settingsTab=b.dataset.settingsTab;drawDialog();return;}
+ b=e.target.closest('[data-assign]');if(b){const id=b.dataset.assign;commit(()=>{const c=getChar(chooserChar);if(!c)return;c.extraEffects=c.extraEffects.includes(id)?c.extraEffects.filter(x=>x!==id):[...c.extraEffects,id];if(!c.extraEffects.includes(id))c.effects=c.effects.filter(x=>x!==id);});drawDialog();return;}
+ b=e.target.closest('[data-delete-custom]');if(b){if(!confirm('Remove this custom effect from the library and all characters?'))return;const id=b.dataset.deleteCustom;commit(()=>{state.customEffects=state.customEffects.filter(x=>x.id!==id);for(const c of state.characters){c.extraEffects=c.extraEffects.filter(x=>x!==id);c.effects=c.effects.filter(x=>x!==id);}for(const rest of ['short','long'])delete state.restRules[rest].effects[id];});drawDialog();return;}
+ if(e.target.id==='editRulesFromPreview'){settingsTab='rests';restTab=previewRest;openDialog('settings');return;}
+});
+$('dialogMain').addEventListener('submit',e=>{
+ if(e.target.id!=='customEffectForm')return;e.preventDefault();const form=e.target;const name=form.elements.name.value.trim(),abbr=form.elements.abbr.value.trim().toUpperCase(),color=form.elements.color.value;if(!name||!abbr)return;if(state.customEffects.length>=60){alert('Maximum 60 custom effects.');return;}
+ commit(()=>{state.customEffects.push({id:'custom:'+uid(),label:name.slice(0,50),abbr:abbr.slice(0,4),color,kind:'custom'});});drawDialog();
+});
+$('dialogFoot').addEventListener('click',e=>{if(e.target.closest('[data-close]'))closeDialog();if(e.target.id==='applyRest')runRest(previewRest,previewTarget);});
+$('closeDialog').addEventListener('click',closeDialog);
+$('overlay').addEventListener('pointerdown',e=>{if(e.target.id==='overlay')closeDialog();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&dialog)closeDialog();});
+for(const rest of ['short','long'])$(rest+'Rest').addEventListener('click',()=>{previewRest=rest;previewTarget='all';openDialog('rest');});
+$('editMode').addEventListener('click',()=>{settingsTab='rests';restTab='long';ruleScope='all';openDialog('settings');});
+$('undo').addEventListener('click',()=>{if(!history.length)return;state=normalize(JSON.parse(history.pop()));persist();render();if(dialog)drawDialog();});
+$('lockMode').addEventListener('click',()=>{lockMode=!lockMode;render();});
+// All field editing counts as one undoable action per focus session, not every keystroke.
+document.addEventListener('focusin',e=>{if(e.target.matches('[data-name],[data-notes],[data-counter-name],[data-count],[data-max],[data-rest-rule]'))editBaseline=snapshot();});
+document.addEventListener('focusout',e=>{if(editBaseline!==null&&e.target.matches('[data-name],[data-notes],[data-counter-name],[data-count],[data-max],[data-rest-rule]')){record(editBaseline);editBaseline=null;persist();renderIfNeededAfterField(e.target);}});
+const renderIfNeededAfterField=el=>{syncInlineCounter(el);};
+// Update affected controls in place. Rebuilding a row during blur would swallow
+// the user's next click (for example, typing 3 then immediately clicking +).
+const syncInlineCounter=el=>{
+ const row=el.closest('.character');if(!row)return;
+ const c=getChar(row.dataset.id);if(!c)return;
+ for(const t of c.counters){
+  const input=[...row.querySelectorAll('[data-count]')].find(x=>x.dataset.count===t.id);
+  if(!input)continue;const card=input.closest('.counter');
+  card.classList.toggle('at-limit',t.max!==null&&t.value===t.max);
+  card.classList.toggle('over-limit',t.max!==null&&t.value>t.max);
+  const down=card.querySelector('[data-step="-1"]'),up=card.querySelector('[data-step="1"]');
+  if(down)down.disabled=t.value===0;if(up)up.disabled=t.value===999;
+ }
+ const ex=row.querySelector('[data-effect="condition:exhaustion"]'),linked=linkedExhaustion(c);
+ if(ex&&linked){ex.classList.toggle('active',linked.value>0);ex.setAttribute('aria-pressed',String(linked.value>0));ex.title='Exhaustion — level '+linked.value;}
+};
+list.addEventListener('input',e=>{const el=e.target, cid=el.dataset.character;let t;if(el.dataset.name!==undefined){const c=getChar(el.dataset.name);if(c)c.name=el.value;}else if(el.dataset.notes!==undefined){const c=getChar(el.dataset.notes);if(c)c.notes=el.value;}else if(el.dataset.counterName!==undefined){t=getCount(cid,el.dataset.counterName);if(t)t.label=el.value;}else if(el.dataset.count!==undefined){t=getCount(cid,el.dataset.count);if(t&&el.value!=='')t.value=clamp(el.value);}else if(el.dataset.max!==undefined){t=getCount(cid,el.dataset.max);if(t)t.max=el.value===''?null:clamp(el.value,1,999);}else return;persist();syncInlineCounter(el);});
+list.addEventListener('change',e=>{const el=e.target;const cid=el.dataset.character;if(el.dataset.name!==undefined){const c=getChar(el.dataset.name);if(c&&!c.name.trim())c.name='Unnamed character';}if(el.dataset.counterName!==undefined){const t=getCount(cid,el.dataset.counterName);if(t&&!t.label.trim())t.label='Counter';}if(el.dataset.count!==undefined){const t=getCount(cid,el.dataset.count);if(t)t.value=clamp(el.value);}if(el.dataset.max!==undefined){const t=getCount(cid,el.dataset.max);if(t)t.max=el.value===''?null:clamp(el.value,1,999);}persist();});
+list.addEventListener('click',e=>{
+ const b=e.target.closest('button');if(!b)return;const cid=b.dataset.character,c=getChar(cid);
+ if(b.dataset.save){if(!c)return;const key=b.dataset.save,index=Number(b.dataset.index),v=c[key][index];if(!lockMode&&v===2)return;commit(()=>{if(lockMode)c[key][index]=v===2?1:2;else if(v===1){for(let i=index;i<3;i++){if(c[key][i]!==2)c[key][i]=0;}}else{for(let i=0;i<=index;i++){if(c[key][i]!==2)c[key][i]=1;}}});return;}
+ if(b.dataset.effect){if(!c)return;const id=b.dataset.effect,linked=id==='condition:exhaustion'?linkedExhaustion(c):null;if(linked&&linked.value>0){alert('Exhaustion is linked to its counter ('+linked.value+'). Adjust that counter to remove the status.');return;}commit(()=>{if(linked){linked.value=1;return;}c.effects=c.effects.includes(id)?c.effects.filter(x=>x!==id):[...c.effects,id];});return;}
+ if(b.dataset.step){const t=getCount(cid,b.dataset.counter);if(!t)return;commit(()=>{t.value=clamp(t.value+Number(b.dataset.step));});return;}
+ if(b.dataset.addCounter){const char=getChar(b.dataset.addCounter);if(!char)return;if(char.counters.length>=24){alert('Maximum 24 counters per character.');return;}const newT=counter('New counter');commit(()=>char.counters.push(newT));const input=[...list.querySelectorAll('[data-counter-name]')].find(n=>n.dataset.character===char.id&&n.dataset.counterName===newT.id);if(input){input.focus();input.select();}return;}
+ if(b.dataset.removeCounter){const char=getChar(cid),t=getCount(cid,b.dataset.removeCounter);if(!char||!t)return;if(!confirm('Remove '+t.label+' counter from '+char.name+'?'))return;commit(()=>{char.counters=char.counters.filter(x=>x.id!==t.id);});return;}
+ if(b.dataset.reset){const char=getChar(b.dataset.reset);if(char)commit(()=>{char.successes=char.successes.map(v=>v===2?2:0);char.failures=char.failures.map(v=>v===2?2:0);});return;}
+ if(b.dataset.remove){const char=getChar(b.dataset.remove);if(!char||!confirm('Remove '+char.name+' and all their data? (Undo can restore them.)'))return;commit(()=>{state.characters=state.characters.filter(x=>x.id!==char.id);});return;}
+ if(b.dataset.chooseEffects){chooserChar=b.dataset.chooseEffects;openDialog('chooser');return;}
+});
+// A button is draggable; the entire row is a drop target. ArrowUp/Down on the handle provides a keyboard alternative.
+list.addEventListener('dragstart',e=>{const h=e.target.closest('[data-drag]');if(!h)return;dragId=h.dataset.drag;e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',dragId);});
+list.addEventListener('dragover',e=>{if(!dragId)return;const row=e.target.closest('.character');if(!row)return;e.preventDefault();e.dataTransfer.dropEffect='move';list.querySelectorAll('.is-drag-target').forEach(x=>x.classList.remove('is-drag-target'));row.classList.add('is-drag-target');});
+list.addEventListener('drop',e=>{const row=e.target.closest('.character');if(!dragId||!row)return;e.preventDefault();const source=dragId,target=row.dataset.id;dragId=null;list.querySelectorAll('.is-drag-target').forEach(x=>x.classList.remove('is-drag-target'));if(source===target)return;commit(()=>{const from=state.characters.findIndex(x=>x.id===source),to=state.characters.findIndex(x=>x.id===target);if(from<0||to<0)return;const [x]=state.characters.splice(from,1);state.characters.splice(to,0,x);});});
+list.addEventListener('dragend',()=>{dragId=null;list.querySelectorAll('.is-drag-target').forEach(x=>x.classList.remove('is-drag-target'));});
+list.addEventListener('keydown',e=>{const h=e.target.closest('[data-drag]');if(!h||!['ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();const id=h.dataset.drag,i=state.characters.findIndex(x=>x.id===id),j=i+(e.key==='ArrowUp'?-1:1);if(j<0||j>=state.characters.length)return;commit(()=>{[state.characters[i],state.characters[j]]=[state.characters[j],state.characters[i]];});const next=[...list.querySelectorAll('[data-drag]')].find(x=>x.dataset.drag===id);next?.focus();});
+// Resize notes to the left, preserving the row height and individual character widths.
+list.addEventListener('pointerdown',e=>{const h=e.target.closest('[data-resize]');if(!h||e.button!==0)return;const c=getChar(h.dataset.resize);if(!c)return;e.preventDefault();const old=snapshot(),startX=e.clientX,startWidth=c.notesWidth,row=h.closest('.character');const scale=state.settings.scale/100;const move=ev=>{c.notesWidth=clamp(startWidth+(startX-ev.clientX)/scale,190,1000);row.style.setProperty('--notes-width',c.notesWidth+'px');};const end=()=>{h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',end);h.removeEventListener('pointercancel',end);document.body.classList.remove('resizing');record(old);persist();};document.body.classList.add('resizing');h.addEventListener('pointermove',move);h.addEventListener('pointerup',end);h.addEventListener('pointercancel',end);h.setPointerCapture(e.pointerId);});
+list.addEventListener('dblclick',e=>{const b=e.target.closest('[data-resize]');if(b){const c=getChar(b.dataset.resize);if(c)commit(()=>{c.notesWidth=350;});}});
+list.addEventListener('keydown',e=>{const h=e.target.closest('[data-resize]');if(!h||!['ArrowLeft','ArrowRight'].includes(e.key))return;e.preventDefault();const c=getChar(h.dataset.resize);if(c)commit(()=>{c.notesWidth=clamp(c.notesWidth+(e.key==='ArrowLeft'?25:-25),190,1000);});});
+$('addCharacter').addEventListener('click',()=>{if(state.characters.length>=100){alert('Maximum 100 characters.');return;}let n=state.characters.length+1;while(state.characters.some(c=>c.name==='Character '+n))n++;const c=blank('Character '+n);commit(()=>{state.characters.push(c);});const node=[...list.querySelectorAll('[data-name]')].find(x=>x.dataset.name===c.id);node?.focus();node?.select();});
+$('scale').addEventListener('input',e=>{$('workspace').style.zoom=Number(e.target.value)/100;$('scaleValue').textContent=e.target.value+'%';});
+$('scale').addEventListener('change',e=>{commit(()=>{state.settings.scale=Number(e.target.value);},false);});
+$('layout').addEventListener('change',e=>{commit(()=>{state.settings.layout=e.target.value;});});
+$('menuToggle').addEventListener('click',()=>{$('menu').hidden=!$('menu').hidden;$('menuToggle').setAttribute('aria-expanded',String(!$('menu').hidden));});
+document.addEventListener('click',e=>{if(!e.target.closest('.menu-wrap')){$('menu').hidden=true;$('menuToggle').setAttribute('aria-expanded','false');}});
+$('exportBtn').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='character-tracker-backup.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1200);$('menu').hidden=true;});
+$('importBtn').addEventListener('click',()=>{$('fileInput').click();$('menu').hidden=true;});
+$('fileInput').addEventListener('change',async e=>{const file=e.target.files[0];e.target.value='';if(!file)return;try{if(file.size>3e6)throw Error('Too large');const candidate=normalize(JSON.parse(await file.text()));if(!confirm('Replace the entire current tracker with this backup?'))return;commit(()=>{state=candidate;});}catch(err){alert('Could not read this tracker backup: '+err.message);}});
+render();persist();
+})();
+</script>
+</body></html>
